@@ -66,7 +66,7 @@ if (not init_job):
     jobInstaPy()
     init_job = True
 
-schedule.every().day("06:00").do(jobInstaPy)
+schedule.every().second.do(jobInstaPy)
 
 while True:
     schedule.run_pending()
