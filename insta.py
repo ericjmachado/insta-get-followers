@@ -6,8 +6,8 @@ import schedule
 import time
 
 # login credentials
-insta_username = "login"
-insta_password = "senha"
+insta_username = "user"
+insta_password = "pass"
 
 init_job = False
 
@@ -17,10 +17,11 @@ session = InstaPy(username=insta_username,
                   password=insta_password,
                   headless_browser=True)
 
-with smart_run(session):
-    """ Activity flow """
-    # general settings
-    def jobInstaPy() :
+def jobInstaPy() :
+
+    with smart_run(session):
+        """ Activity flow """
+        # general settings
         session.set_relationship_bounds(enabled=True,
                                         delimit_by_numbers=True,
                                         max_followers=40000,
@@ -33,32 +34,22 @@ with smart_run(session):
         3500/4000 users for better results)...
         """
 
-        to_follow = ["Publico alvo",
-                    ]
-        session.set_skip_users(skip_private=True, private_percentage=100,
-        			 skip_no_profile_pic=True, no_profile_pic_percentage=100)
+        to_follow = ["publico alvo"
+	            ] 
+        session.set_skip_users(skip_private=True, private_percentage=40,
+                        skip_no_profile_pic=True, no_profile_pic_percentage=100)
+	
+	amout_follow = 800 / len(to_follow)
 
-        session.follow_user_followers(to_follow, amount=800,
-                                     randomize=False, interact=False)
+        session.follow_user_followers(to_follow, amount=amout_follow,
+                                        randomize=False, interact=False, sleep_delay=601)
 
-        """ First step of Unfollow action - Unfollow not follower users...
-        """
-        session.unfollow_users(amount=800, InstapyFollowed=(True, "nonfollowers"),
-                               style="FIFO",
-                               unfollow_after=16 * 60 * 60, sleep_delay=601)
-        
+	time.sleep(7200)
 
-        """ Second step of Massive Follow...
-        """
-        session.follow_user_followers(to_follow, amount=800,
-                                    randomize=False, interact=False)
-
-        """ Clean all followed user - Unfollow all users followed by InstaPy...
-        """
         session.unfollow_users(amount=800, InstapyFollowed=(True, "all"),
-                            style="FIFO", unfollow_after = 32 * 60 * 60,
-                            sleep_delay=601)
-        time.sleep(10800)
+                                style="FIFO",
+                                unfollow_after=12 * 60 * 60, sleep_delay=601)
+        time.sleep(3600)
 
 
 
@@ -66,8 +57,8 @@ if (not init_job):
     jobInstaPy()
     init_job = True
 
-schedule.every().second.do(jobInstaPy)
 
+schedule.every(24).hours.do(jobInstaPy)
 while True:
     schedule.run_pending()
     time.sleep(300)
