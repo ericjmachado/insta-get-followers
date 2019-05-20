@@ -1,64 +1,67 @@
-# imports
 from instapy import InstaPy
 from instapy import smart_run
-
 import schedule
 import time
+import datetime
 
-# login credentials
+init_job = False
+date_job = datetime.datetime.now()
 insta_username = "user"
 insta_password = "pass"
 
-init_job = False
 
-# get an InstaPy session!
-# set headless_browser=True to run InstaPy in the background
-session = InstaPy(username=insta_username,
-                  password=insta_password,
-                  headless_browser=True)
+def job_insta_py():
 
-def jobInstaPy() :
+    if calc_date():
+        global date_job
+        date_job = datetime.datetime.now()
 
-    with smart_run(session):
-        """ Activity flow """
-        # general settings
-        session.set_relationship_bounds(enabled=True,
-                                        delimit_by_numbers=True,
-                                        max_followers=40000,
-                                        min_followers=70,
-                                        min_following=50)
+        session = InstaPy(username=insta_username,
+                          password=insta_password,
+                          headless_browser=True)
 
+        with smart_run(session):
+            print("init schedule")
+            session.set_relationship_bounds(enabled=True,
+                                            delimit_by_numbers=True,
+                                            min_followers=30,
+                                            min_following=30)
 
+            to_follow = ['public alvo']
 
-        """ Massive Follow of users followers (I suggest to follow not less than
-        3500/4000 users for better results)...
-        """
+            session.set_skip_users(skip_private=False,
+                                   skip_no_profile_pic=True, no_profile_pic_percentage=100)
 
-        to_follow = ["publico alvo"
-	            ] 
-        session.set_skip_users(skip_private=True, private_percentage=40,
-                        skip_no_profile_pic=True, no_profile_pic_percentage=100)
-	
-	amout_follow = 800 / len(to_follow)
+            session.set_quota_supervisor(enabled=True,
+                                         peak_follows=(70, 600),
+                                         peak_unfollows=(70, 600))
 
-        session.follow_user_followers(to_follow, amount=amout_follow,
-                                        randomize=False, interact=False, sleep_delay=601)
+            amout_follow = int(800 / len(to_follow))
+            print(amout_follow)
+            session.follow_user_followers(to_follow, amount=amout_follow,
+                                          randomize=True, interact=False, sleep_delay=601)
 
-	time.sleep(7200)
+            print("Sleeping")
+            time.sleep(18000)
 
-        session.unfollow_users(amount=800, InstapyFollowed=(True, "all"),
-                                style="FIFO",
-                                unfollow_after=12 * 60 * 60, sleep_delay=601)
-        time.sleep(3600)
+            session.unfollow_users(amount=1000, InstapyFollowed=(True, "all"),
+                                   style="FIFO",
+                                   unfollow_after=12 * 60 * 60, sleep_delay=601)
+            print("Waiting schedule")
 
 
+def calc_date():
+    if not init_job:
+        return True
+    else:
+        return (datetime.datetime.now() - date_job).days > 0
 
 if (not init_job):
-    jobInstaPy()
+    job_insta_py()
     init_job = True
 
-
-schedule.every(24).hours.do(jobInstaPy)
+schedule.every().hour.do(job_insta_py)
 while True:
     schedule.run_pending()
-    time.sleep(300)
+    time.sleep(600)
+
