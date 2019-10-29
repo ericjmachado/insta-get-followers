@@ -7,8 +7,8 @@ import random
 
 init_job = False
 date_job = datetime.datetime.now()
-insta_username = "mastercodebr"
-insta_password = "goias2000"
+insta_username = ""
+insta_password = ""
 
 
 def job_insta_py():
